@@ -40,6 +40,9 @@ allow system_app asec_apk_file:file r_file_perms;
 #
 type system, domain, mlstrustedsubject;
 
+# Dalvik Compiler JIT Mapping.
+allow system self:process execmem;
+
 # Child of the zygote.
 allow system zygote:fd use;
 allow system zygote:process sigchld;

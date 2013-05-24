@@ -5,6 +5,9 @@ type surfaceflinger_exec, exec_type, file_type;
 init_daemon_domain(surfaceflinger)
 typeattribute surfaceflinger mlstrustedsubject;
 
+# mprotect RWX
+allow surfaceflinger self:process execmem;
+
 # Talk to init over the property socket.
 unix_socket_connect(surfaceflinger, property, init)
 

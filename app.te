@@ -113,6 +113,9 @@ allow untrustedappdomain asec_apk_file:file r_file_perms;
 # Rules for all app domains.
 #
 
+# Dalvik Compiler JIT Mapping.
+allow appdomain self:process execmem;
+
 # Allow apps to connect to the keystore
 unix_socket_connect(appdomain, keystore, keystore)
 
