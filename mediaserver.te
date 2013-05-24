@@ -15,6 +15,7 @@ binder_call(mediaserver, binderservicedomain)
 binder_call(mediaserver, appdomain)
 binder_service(mediaserver)
 
+allow mediaserver self:process execmem;
 allow mediaserver kernel:system module_request;
 allow mediaserver app_data_file:dir search;
 allow mediaserver app_data_file:file rw_file_perms;
