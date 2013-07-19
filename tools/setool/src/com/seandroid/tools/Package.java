@@ -68,18 +68,22 @@ public class Package {
         mWriter = output;
     }
 
-    public void createPolicyEntry(String apk, String seinfo) {
+    public String createPolicyEntry(String apk, String seinfo) {
         readCerts(apk);
         aapt(apk);
         mPolicyXml = PolicyBuilder.createAllowPermsStanza(mX509Certs, mUsesPerms,
                                                           mPackageName, seinfo);
-        dumpPolicy();
+        // Let's instead pass back the stanza so we can potentially dedupe
+        //dumpPolicy();
+        return mPolicyXml;
     }
 
-    public void createKeysOnly(String apk, String seinfo) {
+    public String createKeysOnly(String apk, String seinfo) {
         readCerts(apk);
         mPolicyXml = PolicyBuilder.createSignerOnlyStanza(mX509Certs, seinfo);
-        dumpPolicy();
+        // Let's instead pass back the stanza so we can potentially dedupe
+        //dumpPolicy();
+        return mPolicyXml;
     }
 
     public void aapt(String apk) {

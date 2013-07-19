@@ -130,6 +130,9 @@ public class Main {
             System.exit(EXIT_ERROR);
         }
 
+        // A Set to store all the constructed policies
+        Set<String> derivedPolicies = new HashSet<String>();
+
         for (String apk : mApks) {
             File apk_file = new File(apk);
             if (!apk_file.isAbsolute()) {
@@ -143,9 +146,9 @@ public class Main {
             Package app = new Package(mOutput);
             if (mBuildPolicy) {
                 if (mBuildType.equals(Usage.ENTRY_WHITE)) {
-                    app.createPolicyEntry(apk, mSeinfo);
+                    derivedPolicies.add(app.createPolicyEntry(apk, mSeinfo));
                 } else if (mBuildType.equals(Usage.KEYS_TAG)) {
-                    app.createKeysOnly(apk, mSeinfo);
+                    derivedPolicies.add(app.createKeysOnly(apk, mSeinfo));
                 } else {
                     ERROR.println("Didn't specify a valid " + Usage.BUILD + " option.");
                     Usage.printUsage(System.out);
@@ -176,6 +179,11 @@ public class Main {
                 Usage.printUsage(System.out);
                 System.exit(EXIT_ERROR);
             }
+        }
+
+        // Dump all policies created
+        for (String policy : derivedPolicies) {
+            mOutput.println(policy);
         }
     }
 }
