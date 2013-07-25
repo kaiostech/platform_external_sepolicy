@@ -100,6 +100,7 @@
       <allow-permission name="android.permission.CALL_PHONE" />
       <allow-permission name="android.permission.CALL_PRIVILEGED" />
       <allow-permission name="android.permission.CAMERA" />
+      <allow-permission name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
       <allow-permission name="android.permission.GET_ACCOUNTS" />
       <allow-permission name="android.permission.GLOBAL_SEARCH" />
       <allow-permission name="android.permission.INTERNET" />
@@ -125,6 +126,7 @@
       <allow-permission name="android.permission.SET_WALLPAPER_HINTS" />
       <allow-permission name="android.permission.SUBSCRIBED_FEEDS_READ" />
       <allow-permission name="android.permission.SUBSCRIBED_FEEDS_WRITE" />
+      <allow-permission name="android.permission.UPDATE_APP_OPS_STATS" />
       <allow-permission name="android.permission.USE_CREDENTIALS" />
       <allow-permission name="android.permission.VIBRATE" />
       <allow-permission name="android.permission.WAKE_LOCK" />
