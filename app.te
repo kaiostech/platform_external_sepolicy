@@ -51,6 +51,7 @@ allow media_app cache_backup_file:file getattr;
 allow media_app cache_backup_file:dir getattr;
 # Read files in the rootdir (in particular, file_contexts for restorecon).
 allow media_app rootfs:file r_file_perms;
+allow media_app download_file:dir r_dir_perms;
 # Allow platform apps to mark platform app data files as download files
 allow media_app platform_app_data_file:dir relabelfrom;
 allow media_app download_file:dir relabelto;
@@ -201,5 +202,6 @@ allow { appdomain isolated_app } cache_backup_file:file { read write };
 # Backup ability using 'adb backup'
 allow { appdomain isolated_app } system_data_file:lnk_file getattr;
 
-# Allow all applications to read downloaded files
+# Allow all applications to read downloaded files.
+allow appdomain download_file:dir search;
 allow appdomain download_file:file r_file_perms;
