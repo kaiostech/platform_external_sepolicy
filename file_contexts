@@ -106,6 +106,7 @@
 /dev/watchdog		u:object_r:watchdog_device:s0
 /dev/xt_qtaguid	u:object_r:qtaguid_device:s0
 /dev/zero		u:object_r:zero_device:s0
+/dev/__kmsg__		u:object_r:klog_device:s0
 /dev/__properties__ u:object_r:properties_device:s0
 #############################
 # System files
@@ -143,6 +144,7 @@
 /system/etc/dhcpcd(/.*)? u:object_r:dhcp_system_file:s0
 /system/xbin/su		u:object_r:su_exec:s0
 /system/vendor/bin/gpsd u:object_r:gpsd_exec:s0
+/system/bin/ping    u:object_r:ping_exec:s0
 #############################
 # Data files
 #
@@ -178,6 +180,8 @@
 /data/data/com.android.settings/files/wallpaper	u:object_r:wallpaper_file:s0
 # Wallpaper file for other users
 /data/system/users/[0-9]+/wallpaper		u:object_r:wallpaper_file:s0
+# Downloaded files
+/data/data/com.android.providers.downloads/cache u:object_r:download_file:s0
 #############################
 # efs files
 #
