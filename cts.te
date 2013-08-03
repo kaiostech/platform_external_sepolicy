@@ -3,7 +3,6 @@
 # Do not enable in production policy.
 #
 
-bool android_cts false;
 if (android_cts) {
 # For TestDeviceSetup (RootProcessScanner).
 # Reads /proc/pid/status and statm entries to check that
