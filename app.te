@@ -108,13 +108,12 @@ bluetooth_domain(untrusted_app)
 allow untrustedappdomain tun_device:chr_file rw_file_perms;
 
 # Internal SDCard rw access.
-bool app_internal_sdcard_rw true;
 if (app_internal_sdcard_rw) {
 allow untrustedappdomain sdcard_internal:dir create_dir_perms;
 allow untrustedappdomain sdcard_internal:file create_file_perms;
 }
+
 # External SDCard rw access.
-bool app_external_sdcard_rw true;
 if (app_external_sdcard_rw) {
 allow untrustedappdomain sdcard_external:dir create_dir_perms;
 allow untrustedappdomain sdcard_external:file create_file_perms;

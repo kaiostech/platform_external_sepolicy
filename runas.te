@@ -1,7 +1,6 @@
 type runas, domain, mlstrustedsubject;
 type runas_exec, file_type, exec_type;
 
-bool support_runas true;
 
 if (support_runas) {
 
