@@ -1,4 +1,5 @@
 LOCAL_PATH:= $(call my-dir)
+REAL_LOCAL_PATH := $(LOCAL_PATH)
 
 include $(CLEAR_VARS)
 
@@ -34,4 +35,5 @@ LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_PREBUILT)
 
-include $(LOCAL_PATH)/setool/Android.mk
+include $(REAL_LOCAL_PATH)/setool/Android.mk
+include $(REAL_LOCAL_PATH)/build_bundle/Android.mk
