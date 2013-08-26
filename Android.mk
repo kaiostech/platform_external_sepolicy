@@ -152,12 +152,15 @@ built_sepolicy :=
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := selinux-network.sh
-LOCAL_SRC_FILES := $(LOCAL_MODULE)
-LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
 
-include $(BUILD_PREBUILT)
+include $(BUILD_SYSTEM)/base_rules.mk
+
+$(LOCAL_BUILT_MODULE): $(call build_policy, $(LOCAL_MODULE))
+	mkdir -p $(dir $@)
+	$(hide)m4 -s $^ > $@
 
 ##################################
 include $(CLEAR_VARS)
