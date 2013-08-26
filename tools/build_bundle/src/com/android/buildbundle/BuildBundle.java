@@ -50,7 +50,8 @@ public class BuildBundle {
                            "[-o <output zip file>] [-h] " +
                            "file [ file [ file ... ] ] ");
         System.err.println("Options:");
-        System.err.println(" -p private key used to sign the bundle.");
+        System.err.println(" -p private key used to sign the bundle. The key to use ");
+        System.err.println("            is typically DEFAULT_SYSTEM_DEV_CERTIFICATE.");
         System.err.println(" -v version of the created bundle. Defaults to 1.");
         System.err.println(" -r hash of policy that will be replaced. Defaults to 'NONE'.");
         System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip");
