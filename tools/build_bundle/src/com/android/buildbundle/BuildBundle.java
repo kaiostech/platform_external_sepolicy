@@ -45,13 +45,12 @@ public class BuildBundle {
      */
     private static void usage(String header) {
         System.err.println("\n" + header + "\n");
-        System.err.println("Usage: buildbundle -p <privatekey.pk8> " +
+        System.err.println("Usage: buildbundle -k <privatekey.pk8> " +
                            "[-v <version>] [-r <required hash>] " +
                            "[-o <output zip file>] [-h] " +
                            "file [ file [ file ... ] ] ");
         System.err.println("Options:");
-        System.err.println(" -p private key used to sign the bundle. The key to use ");
-        System.err.println("            is typically DEFAULT_SYSTEM_DEV_CERTIFICATE.");
+        System.err.println(" -k private key used to sign the bundle.");
         System.err.println(" -v version of the created bundle. Defaults to 1.");
         System.err.println(" -r hash of policy that will be replaced. Defaults to 'NONE'.");
         System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip");
@@ -296,7 +295,7 @@ public class BuildBundle {
             for (int i = 0; i < args.length; i++) {
                 String arg = args[i];
 
-                if (arg.equals("-p")) {
+                if (arg.equals("-k")) {
                     privateKey = args[++i];
                 } else if (arg.equals("-v")) {
                     version = args[++i];
