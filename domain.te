@@ -112,3 +112,4 @@ dontaudit domain debugfs:file  rw_file_perms;
 # security files
 allow domain security_file:dir { search getattr };
 allow domain security_file:file getattr;
+allow domain security_file:lnk_file { getattr read };
