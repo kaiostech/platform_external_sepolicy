@@ -242,7 +242,7 @@ public class BuildBundle {
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
         } catch (InvalidKeySpecException ex) {
-            System.err.println(keyPath + " probably not a PKCS#8 formatted RSA cert.");
+            System.err.println(keyPath + " probably not a PKCS#8 DER formatted RSA cert.");
             throw new GeneralSecurityException(ex);
         }
     }
@@ -343,9 +343,9 @@ public class BuildBundle {
             out.closeEntry();
             out.close();
         } catch (IOException ioex) {
-            System.out.println("IOException error: " + ioex.toString() + " Exiting.");
+            System.out.println("IOException error: " + ioex.toString() + ". Exiting.");
         } catch (GeneralSecurityException gex) {
-            System.out.println("Security Exception error: " + gex.toString() + " Exiting.");
+            System.out.println("Security Exception error: " + gex.toString() + ". Exiting.");
         }
     }
 }

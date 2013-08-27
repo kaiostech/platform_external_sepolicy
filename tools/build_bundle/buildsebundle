@@ -1,0 +1,90 @@
+#!/bin/sh
+
+##
+# A simple wrapper script around buildbundle that puts
+# the selinux policy files in the correct order as well
+# as correctly labels the output zip file. buildbundle
+# is not context aware w.r.t to the correct ordering of
+# selinux files and so this wrapper script is needed.
+#
+
+usage()
+{
+cat << EOF
+usage: buildsebundle -p <private key.pk8> [-v <version>] [-r <previous hash>] [-h] \
+-f <file_contexts> -c <property_contexts> -s <sepolicy> -a <seapp_contexts>
+
+This script builds a selinux policy bundle and supporting
+metadata file capable of being loaded via the ConfigUpdate
+mechanism. It takes a private key that is a pkcs8 DER encoded
+RSA cert that is then used to sign the bundle. For AOSP
+development you'll typically want to use the key from
+build/target/product/security/testkey.pk8. If building
+your own cert you should probably use at least a key size of
+1024 or greater. The bundle requires that seapp_contexts,
+file_contexts, property_contexts and sepolicy files all be
+included. The built bundle will be written to selinux_bundle.zip
+which will include the signature metadata file of the bundle.
+
+OPTIONS:
+   -h      Show this message
+   -v      Version of the built bundle. Defaults to 1.
+   -r      Sha512 hash of the bundle to replace. Defaults to 'NONE'.
+EOF
+}
+
+VERSION="1"
+HASH="NONE"
+KEY=
+FILE_CONTEXTS=
+PROPERTY_CONTEXTS=
+SEAPP_CONTEXTS=
+SEPOLICY=
+OUTPUT=selinux_bundle.zip
+while getopts "hv:p:r:f:c:s:a:" OPTION
+do
+     case $OPTION in
+         h)
+             usage
+             exit 1
+             ;;
+         v)
+             VERSION=$OPTARG
+             ;;
+         p)
+             KEY=$OPTARG
+             ;;
+         r)
+             HASH=$OPTARG
+             ;;
+         f)
+             FILE_CONTEXTS=$OPTARG
+             ;;
+         c)
+             PROPERTY_CONTEXTS=$OPTARG
+             ;;
+         s)
+             SEPOLICY=$OPTARG
+             ;;
+         a)
+             SEAPP_CONTEXTS=$OPTARG
+             ;;
+         ?)
+             usage
+             exit
+             ;;
+     esac
+done
+
+if [ -z $FILE_CONTEXTS ] || [ -z $PROPERTY_CONTEXTS ] || [ -z $SEAPP_CONTEXTS ] \
+   || [ -z $SEPOLICY ] || [ -z $KEY ]
+then
+     usage
+     exit 1
+fi
+
+# Notice the order of the policy files matter here. The backend expects
+# a set order. Any change there (SELinuxPolicyInstallReceiver.java) will
+# result in a change here.
+BUILDBUNDLE_COMMAND="buildbundle -p $KEY -v $VERSION -r $HASH -o $OUTPUT $SEAPP_CONTEXTS $PROPERTY_CONTEXTS $FILE_CONTEXTS $SEPOLICY"
+$BUILDBUNDLE_COMMAND
