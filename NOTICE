@@ -1,4 +1,13 @@
-This configuration (sepolicy) is public domain, i.e. not copyrighted.
+All of the configuration files within this directory are public domain,
+i.e. not copyrighted.
+
+Specific files under the tools subdirectory are derived from the
+Android Open Source Project (http://source.android.com) and are therefore
+licensed under the Apache License, Version 2.0.  At present this is only
+true for the following file:
+	tools/build_bundle/src/android/util/Base64.java
+See the individual files for specific information.  If not otherwise marked,
+the files are public domain.
 
 Warranty Exclusion
 ------------------
