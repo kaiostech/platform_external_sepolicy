@@ -26,8 +26,11 @@ include $(BUILD_HOST_PREBUILT)
 ##################################
 include $(CLEAR_VARS)
 
+LOCAL_REQUIRED_MODULES := buildbundle
+LOCAL_MODULE := buildsebundle
+LOCAL_SRC_FILES := buildsebundle
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_IS_HOST_MODULE := true
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_PREBUILT_EXECUTABLES := buildsebundle
-
-include $(BUILD_HOST_PREBUILT)
+include $(BUILD_PREBUILT)
