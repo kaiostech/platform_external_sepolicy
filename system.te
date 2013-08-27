@@ -186,6 +186,10 @@ allow system ctl_default_prop:property_service set;
 type_transition system wifi_data_file:sock_file system_wpa_socket;
 allow system system_wpa_socket:sock_file create_file_perms;
 
+# Create a socket for connections from debuggerd.
+type_transition system system_data_file:sock_file system_ndebug_socket "ndebugsocket";
+allow system system_ndebug_socket:sock_file create_file_perms;
+
 # Manage cache files.
 allow system cache_file:dir { relabelfrom create_dir_perms };
 allow system cache_file:file { relabelfrom create_file_perms };
