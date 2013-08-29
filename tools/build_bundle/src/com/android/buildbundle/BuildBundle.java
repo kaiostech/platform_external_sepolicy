@@ -33,6 +33,19 @@ import android.util.Base64;
  * Command line tool to build OTA config bundles capable of
  * being delivered via the ConfigUpdateInstallReceiver
  * mechanism.
+ *
+ * <pre>
+ * Usage: buildbundle -k &lt;privatekey.pk8&gt; [-v &lt;version&gt;] [-r &lt;required hash&gt;] [-o &lt;output zip file&gt;] [-h] file [ file [ file ... ] ] 
+ * Options:
+ *    -k pkcs8 DER formatted private key used to sign the bundle.
+ *    -v version of the created bundle. Defaults to 1.
+ *    -r hash of previous bundle that will be replaced. Defaults to 'NONE'.
+ *    -o name of the output zip file. Defaults to update_bundle.zip.
+ *    -h prints this help screen.
+ * Positional Arguments:
+ *    file: path to a file to be included in the signed bundle.
+ *          The order of the files will be preserved in the bundle.
+ * </pre>
  */
 public class BuildBundle {
 
@@ -41,7 +54,7 @@ public class BuildBundle {
      * and then exit with a value of 1.
      *
      * @param header a string that will be printed before
-     *        the usage statement
+     *        the usage statement.
      */
     private static void usage(String header) {
         System.err.println("\n" + header + "\n");
@@ -50,11 +63,11 @@ public class BuildBundle {
                            "[-o <output zip file>] [-h] " +
                            "file [ file [ file ... ] ] ");
         System.err.println("Options:");
-        System.err.println(" -k private key used to sign the bundle.");
+        System.err.println(" -k pkcs8 DER formatted private key used to sign the bundle.");
         System.err.println(" -v version of the created bundle. Defaults to 1.");
-        System.err.println(" -r hash of policy that will be replaced. Defaults to 'NONE'.");
-        System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip");
-        System.err.println(" -h prints this help screen");
+        System.err.println(" -r hash of previous bundle that will be replaced. Defaults to 'NONE'.");
+        System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip.");
+        System.err.println(" -h prints this help screen.");
         System.err.println("Positional Arguments:");
         System.err.println(" file: path to a file to be included in the signed bundle.");
         System.err.println("       The order of the files will be preserved in the bundle.");
@@ -66,18 +79,18 @@ public class BuildBundle {
      * current bundle scheme used by ConfigUpdateInstallReceiver.
      * Presently, the encoding is base64 chunked, line
      * wrapped at 76 characters, with each line ending
-     * in '\r\n'. A byte array of the encoded file is returned.
+     * in '\n'. A byte array of the encoded file is returned.
      * Base64 is the choosen encoding scheme for OTA config
      * bundle updates and this function is subject to change
      * if the update mechanism itself changes.
      *
-     * @param path File object of the file to encode
+     * @param path File object of the file to encode.
      *
      * @exception IOException produced by failed or interrupted
-     *            I/O operations on the requested path
+     *            I/O operations on the requested path or if
+     *            the passed path is null.
      *
-     * @return byte array of the encoded file scheme
-     * @hide
+     * @return byte array of the encoded file scheme.
      */
     private static byte[] create_encoding(File path) throws IOException {
 
@@ -94,7 +107,7 @@ public class BuildBundle {
      * capable of being loaded via the ConfigUpdateInstallReceiver
      * mechanism. The order of the entries in the array will
      * be preserved when building the bundle. The bundle as
-     * a byte array is returned as is capable of being directly
+     * a byte array is returned and is capable of being directly
      * loaded via the ConfigUpdateInstallReceiver mechanism.
      * If there are no paths passed then no bundle is created;
      * however, an empty byte array will still be returned.
@@ -102,12 +115,13 @@ public class BuildBundle {
      * processing must be performed to calculate that data.
      *
      * @param paths ArrayList of strings representing paths
-     *              to config files to include in the bundle
+     *              to config files to include in the bundle.
      *
      * @exception IOException produced by failed or interrupted
-     *            I/O operations on any of the requested paths
+     *            I/O operations on any of the requested paths or
+     *            if the passed paths list is null.
      *
-     * @return byte array of the created config bundle
+     * @return byte array of the created config bundle.
      */
     public static byte[] build_bundle(ArrayList<String> paths) throws IOException {
 
@@ -147,10 +161,10 @@ public class BuildBundle {
      * scheduler. Thus, this function might have to change
      * in the future.
      *
-     * @param keyPath the path to the key as a string
+     * @param keyPath the path to the key as a string.
      *
      * @exception IOException produced by failed or interrupted
-     *            I/O operations on the current console
+     *            I/O operations on the current console.
      *
      * @return a char array of the password needed to decrypt
      *         the key or null if an error occured with the console.
@@ -175,11 +189,11 @@ public class BuildBundle {
      * interface object. The private key can be encrypted or not.
      * If encrypted, the user will be prompted for the password.
      *
-     * @param privateKey the private key to decrypt given as byte array
-     * @param keyPath path to the key given as a string
+     * @param privateKey the private key to decrypt given as byte array.
+     * @param keyPath path to the key given as a string.
      *
      * @exception IOException produced by failed or interrupted I/O
-     *            operations when retrieving the password for the key
+     *            operations when retrieving the password for the key.
      * @exception GeneralSecurityException generic security exceptions
      *            that result from signature and key operations.
      *
@@ -219,16 +233,16 @@ public class BuildBundle {
      * decrypted with a password if needed. The private key is
      * assumed to be encoded according to the pkcs8 standard.
      *
-     * @param privateKey the private key to decrypt given as byte array
-     * @param keyPath path to the key given as a string
+     * @param privateKey the private key to decrypt given as byte array.
+     * @param keyPath path to the key given as a string.
      *
      * @exception IOException produced by failed or interrupted I/O
-     *            operations when retrieving the password for the key
+     *            operations when retrieving the password for the key.
      * @exception GeneralSecurityException generic security exceptions
      *            that result from signature and key operations.
      *
      * @return a PrivateKey interface object to the underlying
-     *         key material
+     *         key material.
      */
     private static PrivateKey getPrivateKey(byte[] privateKey, String keyPath)
             throws IOException, GeneralSecurityException {
@@ -248,21 +262,22 @@ public class BuildBundle {
 
     /**
      * Takes a byte array as well as the version and previous hash and
-     * computes the digital signature using sha512 and RSA. The secured
+     * computes the digital signature with RSA and SHA-512. The secured
      * message is then returned as a byte array.
      *
-     * @param bundle byte array representing the built config bundle
-     * @param version the version of this config update
-     * @param privKey the private key needed to sign the config update
+     * @param bundle byte array representing the built config bundle.
+     * @param version the version of this config update.
+     * @param privKey the path to the pkcs8 DER formatted private key
+     *                used to sign the config update.
      * @param requiredHash the hash of the previous config update
-     *                     that will be replaced
+     *                     that will be replaced.
      *
      * @exception IOException produced by failed or interrupted
-     *            I/O operations on the subprocess
+     *            I/O operations when retrieving the key.
      * @exception GeneralSecurityException generic security exceptions
-     *            that result from signature and hashing attempts
+     *            that result from signature and hashing attempts.
      *
-     * @return a byte array of the signed message
+     * @return a byte array of the signed message.
      */
     public static byte[] sign_bundle(byte[] bundle, String version,
                                      String privKey, String requiredHash)
@@ -282,8 +297,12 @@ public class BuildBundle {
         return Base64.encode(signer.sign(), Base64.NO_WRAP);
     }
 
-    public static void main(String[] args)
-            throws IOException, GeneralSecurityException {
+    /**
+     * Main entry point when tool is directly invoked.
+     * Consider the help message invoked with -h for
+     * a more complete description.
+     */
+    public static void main(String[] args) {
 
         String privateKey = null;
         String version = "1";
