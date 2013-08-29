@@ -34,3 +34,15 @@ LOCAL_IS_HOST_MODULE := true
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_PREBUILT)
+
+##################################
+include $(CLEAR_VARS)
+
+LOCAL_REQUIRED_MODULES := buildbundle
+LOCAL_MODULE := buildmmacbundle
+LOCAL_SRC_FILES := buildmmacbundle
+LOCAL_MODULE_CLASS := EXECUTABLES
+LOCAL_IS_HOST_MODULE := true
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_PREBUILT)
