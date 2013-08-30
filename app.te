@@ -1,131 +1,11 @@
-#
-# Domains for apps that do not run with one of the predefined
-# platform UIDs (system, radio, nfc, ...).
-#
-
-#
-# Apps signed with the platform key.
-#
-type platform_app, domain;
-app_domain(platform_app)
-platform_app_domain(platform_app)
-# Access the network.
-net_domain(platform_app)
-# Access bluetooth.
-bluetooth_domain(platform_app)
-# Write to /cache.
-allow platform_app cache_file:dir rw_dir_perms;
-allow platform_app cache_file:file create_file_perms;
-# Read from /data/local.
-allow platform_app shell_data_file:dir search;
-allow platform_app shell_data_file:file { open getattr read };
-allow platform_app shell_data_file:lnk_file read;
-# Populate /data/app/vmdl*.tmp, /data/app-private/vmdl*.tmp files
-# created by system server.
-allow platform_app { apk_tmp_file apk_private_tmp_file }:file rw_file_perms;
-allow platform_app apk_private_data_file:dir search;
-# ASEC
-allow platform_app asec_apk_file:dir create_dir_perms;
-allow platform_app asec_apk_file:file create_file_perms;
-# Access download files.
-allow platform_app download_file:file rw_file_perms;
-# Allow BackupManagerService to backup all app domains
-allow platform_app appdomain:fifo_file write;
-
-# Apps signed with the media key.
-type media_app, domain;
-app_domain(media_app)
-platform_app_domain(media_app)
-# Access the network.
-net_domain(media_app)
-# Access /dev/mtp_usb.
-allow media_app mtp_device:chr_file rw_file_perms;
-# Write to /cache.
-allow media_app cache_file:dir rw_dir_perms;
-allow media_app cache_file:file create_file_perms;
-# Stat /cache/lost+found
-allow media_app unlabeled:file getattr;
-allow media_app unlabeled:dir getattr;
-# Stat /cache/backup
-allow media_app cache_backup_file:file getattr;
-allow media_app cache_backup_file:dir getattr;
-# Read files in the rootdir (in particular, file_contexts for restorecon).
-allow media_app rootfs:file r_file_perms;
-allow media_app download_file:dir rw_dir_perms;
-allow media_app download_file:file create_file_perms;
-# Allow platform apps to mark platform app data files as download files
-allow media_app platform_app_data_file:dir relabelfrom;
-allow media_app download_file:dir relabelto;
-
-# Apps signed with the shared key.
-type shared_app, domain;
-app_domain(shared_app)
-platform_app_domain(shared_app)
-# Access the network.
-net_domain(shared_app)
-# Access bluetooth.
-bluetooth_domain(shared_app)
-# ASEC
-r_dir_file(shared_app, asec_apk_file)
-
-# Apps signed with the release key (testkey in AOSP).
-type release_app, domain;
-app_domain(release_app)
-platform_app_domain(release_app)
-# Access the network.
-net_domain(release_app)
-# Access bluetooth.
-bluetooth_domain(release_app)
-
-# Services with isolatedProcess=true in their manifest.
-# In order for isolated_apps to interact with apps that have levelFromUid=true
-# set it must be an mlstrustedsubject.
-type isolated_app, domain, mlstrustedsubject;
-app_domain(isolated_app)
-
-#
-# Rules for platform app domains.
-#
-
-# App sandbox file accesses.
-allow platformappdomain platform_app_data_file:dir create_dir_perms;
-allow platformappdomain platform_app_data_file:notdevfile_class_set create_file_perms;
-# App sdcard file accesses
-allow platformappdomain sdcard_type:dir create_dir_perms;
-allow platformappdomain sdcard_type:file create_file_perms;
-
-#
-# Untrusted apps.
-#
-type untrusted_app, domain;
-untrustedapp_domain(untrusted_app, app_data_file)
-net_domain(untrusted_app)
-bluetooth_domain(untrusted_app)
-
-#
-# Rules for all untrusted app domains
-#
-allow untrustedappdomain tun_device:chr_file rw_file_perms;
-
-# Internal SDCard rw access.
-if (app_internal_sdcard_rw) {
-allow untrustedappdomain sdcard_internal:dir create_dir_perms;
-allow untrustedappdomain sdcard_internal:file create_file_perms;
-}
-
-# External SDCard rw access.
-if (app_external_sdcard_rw) {
-allow untrustedappdomain sdcard_external:dir create_dir_perms;
-allow untrustedappdomain sdcard_external:file create_file_perms;
-}
-
-# Asec access for private apps
-allow untrustedappdomain asec_apk_file:dir { search getattr };
-allow untrustedappdomain asec_apk_file:file r_file_perms;
-
-#
-# Rules for all app domains.
-#
+###
+### Domain for all zygote spawned apps
+###
+### This file is the base policy for all zygote spawned apps.
+### Other policy files, such as isolated_app.te, untrusted_app.te, etc
+### extend from this policy. Only policies which should apply to ALL
+### zygote spawned apps should be added here.
+###
 
 # Dalvik Compiler JIT Mapping.
 allow appdomain self:process execmem;
@@ -142,12 +22,14 @@ allow appdomain zygote_tmpfs:file read;
 # Notify zygote of death;
 allow appdomain zygote:process sigchld;
 
-# Communicate over a FIFO or socket created by the system_server.
+# Communicate with system_server.
 allow appdomain system:fifo_file rw_file_perms;
 allow appdomain system:unix_stream_socket { read write setopt };
+binder_call(appdomain, system)
 
-# Communicate over a socket created by surfaceflinger.
+# Communicate with surfaceflinger.
 allow appdomain surfaceflinger:unix_stream_socket { read write setopt };
+binder_call(appdomain, surfaceflinger)
 
 # App sandbox file accesses for publicly declared sandboxes.
 allow appdomain app_public_data_type:dir create_dir_perms;
@@ -185,23 +67,174 @@ binder_call(appdomain, binderservicedomain)
 # Perform binder IPC to other apps.
 binder_call(appdomain, appdomain)
 
-# Appdomain interaction with isolated apps
-r_dir_file(appdomain, isolated_app)
-
-# Already connected, unnamed sockets being passed over some other IPC
-# hence no sock_file or connectto permission. This appears to be how
-# Chrome works, may need to be updated as more apps using isolated services
-# are examined.
-allow appdomain isolated_app:unix_stream_socket { read write };
-allow isolated_app appdomain:unix_stream_socket { read write };
-
 # Backup ability for every app. BMS opens and passes the fd
 # to any app that has backup ability. Hence, no open permissions here.
-allow { appdomain isolated_app } backup_data_file:file { read write };
-allow { appdomain isolated_app } cache_backup_file:file { read write };
+allow appdomain backup_data_file:file { read write };
+allow appdomain  cache_backup_file:file { read write };
 # Backup ability using 'adb backup'
-allow { appdomain isolated_app } system_data_file:lnk_file getattr;
+allow appdomain system_data_file:lnk_file getattr;
 
-# Allow all applications to read downloaded files.
+# Allow all applications to read downloaded files
 allow appdomain download_file:dir search;
 allow appdomain download_file:file r_file_perms;
+
+# Allow applications to communicate with netd via /dev/socket/dnsproxyd
+# to do DNS resolution
+unix_socket_connect(appdomain, dnsproxyd, netd)
+
+# Allow applications to communicate with drmserver over binder
+binder_call(appdomain, drmserver)
+
+# Allow applications to communicate with mediaserver over binder
+binder_call(appdomain, mediaserver)
+
+# Allow applications to make outbound tcp connections to any port
+allow appdomain port_type:tcp_socket name_connect;
+
+# Allow apps to see changes to the routing table.
+allow appdomain self:netlink_route_socket {
+    read
+    bind
+    create
+    nlmsg_read
+    ioctl
+    getattr
+    setattr
+    getopt
+    setopt
+    shutdown
+};
+
+# Allow apps to use rawip sockets. This is needed for apps which execute
+# /system/bin/ping, for example.
+allow appdomain self:rawip_socket create_socket_perms;
+
+###
+### Neverallow rules
+###
+### These are things that Android apps should NEVER be able to do
+###
+
+# Superuser capabilities.
+neverallow { appdomain -unconfineddomain -bluetooth } self:capability *;
+neverallow bluetooth self:capability ~net_admin;
+neverallow { appdomain -unconfineddomain } self:capability2 *;
+
+# Block device access.
+neverallow { appdomain -unconfineddomain } dev_type:blk_file { read write };
+
+# Kernel memory access.
+neverallow { appdomain -unconfineddomain } kmem_device:chr_file { read write };
+
+# Access to any character device that is not specifically typed.
+neverallow { appdomain -unconfineddomain } device:chr_file { read write };
+
+# Access to any of the following character devices.
+neverallow { appdomain -unconfineddomain } { audio_device camera_device dm_device graphics_device radio_device gps_device rpmsg_device }:chr_file { read write };
+neverallow { appdomain -nfc } nfc_device:chr_file { read write };
+neverallow { appdomain -bluetooth } hci_attach_dev:chr_file { read write };
+neverallow { appdomain -unconfineddomain } tee_device:chr_file { read write };
+
+# Setting SELinux enforcing status or booleans.
+neverallow { appdomain -unconfineddomain } kernel:security { setenforce setbool };
+
+# Load security policy, set avc threshold, set checkreqprot.
+neverallow { appdomain } kernel:security { load_policy setsecparam setcheckreqprot };
+
+# Privileged netlink socket interfaces.
+neverallow { appdomain -unconfineddomain }
+    self:{
+        netlink_socket
+        netlink_firewall_socket
+        netlink_tcpdiag_socket
+        netlink_nflog_socket
+        netlink_xfrm_socket
+        netlink_selinux_socket
+        netlink_audit_socket
+        netlink_ip6fw_socket
+        netlink_dnrt_socket
+        netlink_kobject_uevent_socket
+    } *;
+
+# Sockets under /dev/socket that are not specifically typed.
+neverallow { appdomain -unconfineddomain } socket_device:sock_file write;
+
+# Unix domain sockets.
+neverallow { appdomain -unconfineddomain } adbd_socket:sock_file write;
+neverallow { appdomain -unconfineddomain } bluetooth_socket:sock_file write;
+neverallow { appdomain -unconfineddomain } installd_socket:sock_file write;
+neverallow { appdomain -bluetooth -radio -shell -system_app } property_socket:sock_file write;
+neverallow { appdomain -radio } rild_socket:sock_file write;
+neverallow { appdomain -unconfineddomain } vold_socket:sock_file write;
+neverallow { appdomain -unconfineddomain } zygote_socket:sock_file write;
+
+# ptrace access to non-app domains.
+neverallow { appdomain -unconfineddomain } { domain -appdomain }:process ptrace;
+
+# Write access to /proc/pid entries for any non-app domain.
+neverallow { appdomain -unconfineddomain } { domain - appdomain }:file write;
+
+# signal access to non-app domains.
+# sigchld allowed for parent death notification.
+# signull allowed for kill(pid, 0) existence test.
+# All others prohibited.
+neverallow { appdomain -unconfineddomain } { domain -appdomain }:process { sigkill sigstop signal };
+
+# Transition to a non-app domain.
+neverallow { appdomain -shell -unconfineddomain } ~appdomain:process { transition dyntransition };
+
+# Map low memory.
+neverallow { appdomain -unconfineddomain } self:memprotect mmap_zero;
+
+# Write to rootfs.
+neverallow { appdomain -unconfineddomain } rootfs:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+
+# Write to /system.
+neverallow { appdomain -unconfineddomain } system_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+
+# Write to entrypoint executables.
+neverallow { appdomain -unconfineddomain } exec_type:file { create write setattr relabelfrom relabelto append unlink link rename };
+
+# Write to system-owned parts of /data.
+# This is the default type for anything under /data not otherwise
+# specified in file_contexts.  Define a different type for portions
+# that should be writable by apps.
+# Exception for system_app for Settings.
+neverallow { appdomain -unconfineddomain -system_app } system_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+
+# Write to various other parts of /data.
+neverallow { appdomain -system_app } security_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } drm_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } gps_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -platform_app } apk_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -platform_app } apk_tmp_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -platform_app } apk_private_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -platform_app } apk_private_tmp_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -shell } shell_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } audit_log:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -bluetooth } bluetooth_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } keystore_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } systemkeys_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } wifi_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+neverallow { appdomain -unconfineddomain } dhcp_data_file:dir_file_class_set { create write setattr relabelfrom relabelto append unlink link rename };
+
+# Access to factory files.
+neverallow { appdomain -unconfineddomain } efs_file:dir_file_class_set { read write };
+
+# Write to various pseudo file systems.
+neverallow { appdomain -nfc } sysfs:dir_file_class_set write;
+neverallow { appdomain -system_app } selinuxfs:dir_file_class_set write;
+neverallow { appdomain -unconfineddomain } proc:dir_file_class_set write;
+
+# Access to syslog(2) or /proc/kmsg.
+neverallow { appdomain -system_app } kernel:system { syslog_read syslog_mod syslog_console };
+
+# Ability to perform any filesystem operation other than statfs(2).
+# i.e. no mount(2), unmount(2), etc.
+neverallow { appdomain -unconfineddomain } fs_type:filesystem ~getattr;
+
+# Ability to set system properties.
+neverallow { appdomain -system_app -radio -shell -bluetooth } property_type:property_service set;
+
+
+

@@ -34,4 +34,17 @@ LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_PREBUILT)
 
+###################################
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := sepolicy-check
+LOCAL_MODULE_TAGS := optional
+LOCAL_C_INCLUDES := external/libsepol/include \
+                    external/libselinux/include
+LOCAL_SRC_FILES := sepolicy-check.c
+LOCAL_STATIC_LIBRARIES := libsepol libselinux
+
+include $(BUILD_HOST_EXECUTABLE)
+
 include $(call all-makefiles-under,$(LOCAL_PATH))
+

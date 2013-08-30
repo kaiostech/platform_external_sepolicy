@@ -18,7 +18,6 @@
 # Empty directories
 /lost\+found		u:object_r:rootfs:s0
 /proc			u:object_r:rootfs:s0
-/sys			u:object_r:rootfs:s0
 
 # SELinux policy files
 /file_contexts		u:object_r:rootfs:s0
@@ -125,7 +124,6 @@
 /system/bin/netd	u:object_r:netd_exec:s0
 /system/bin/rild	u:object_r:rild_exec:s0
 /system/bin/mediaserver	u:object_r:mediaserver_exec:s0
-/system/bin/dnsmasq     u:object_r:dnsmasq_exec:s0
 /system/bin/dbus-daemon	u:object_r:dbusd_exec:s0
 /system/bin/installd	u:object_r:installd_exec:s0
 /system/bin/keystore	u:object_r:keystore_exec:s0
@@ -139,12 +137,14 @@
 /system/bin/pppd	u:object_r:ppp_exec:s0
 /system/bin/tf_daemon	u:object_r:tee_exec:s0
 /system/bin/racoon	u:object_r:racoon_exec:s0
-/system/bin/hostapd     u:object_r:hostapd_exec:s0
 /system/etc/ppp(/.*)?	u:object_r:ppp_system_file:s0
 /system/etc/dhcpcd(/.*)? u:object_r:dhcp_system_file:s0
 /system/xbin/su		u:object_r:su_exec:s0
 /system/vendor/bin/gpsd u:object_r:gpsd_exec:s0
 /system/bin/ping    u:object_r:ping_exec:s0
+/system/bin/dnsmasq     u:object_r:dnsmasq_exec:s0
+/system/bin/hostapd     u:object_r:hostapd_exec:s0
+/system/bin/clatd	u:object_r:clatd_exec:s0
 #############################
 # Data files
 #

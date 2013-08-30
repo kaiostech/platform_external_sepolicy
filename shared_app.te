@@ -1,0 +1,13 @@
+###
+### Apps signed with the shared key.
+###
+
+type shared_app, domain;
+app_domain(shared_app)
+platform_app_domain(shared_app)
+# Access the network.
+net_domain(shared_app)
+# Access bluetooth.
+bluetooth_domain(shared_app)
+# ASEC
+r_dir_file(shared_app, asec_apk_file)

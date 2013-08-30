@@ -6,3 +6,7 @@ tmpfs_domain(init)
 
 # Run sh in its own domain.
 domain_auto_trans(init, shell_exec, init_shell)
+
+relabelto_domain(init)
+allow init {fs_type dev_type file_type}:dir_file_class_set relabelto;
+allow init kernel:security load_policy;

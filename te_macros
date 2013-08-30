@@ -132,6 +132,13 @@ allow $1 $2:notdevfile_class_set create_file_perms;
 ')
 
 #####################################
+# relabelto_domain(domain)
+# Allows this domain to use the relabelto permission
+define(`relabelto_domain', `
+typeattribute $1 relabeltodomain;
+')
+
+#####################################
 # platform_app_domain(domain)
 # Allow permissions specific to platform apps.
 define(`platform_app_domain', `

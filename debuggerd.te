@@ -22,3 +22,7 @@ allow debuggerd system_data_file:file open;
 
 # Connect to system_server via /data/system/ndebugsocket.
 unix_socket_connect(debuggerd, system_ndebug, system)
+
+relabelto_domain(debuggerd)
+allow debuggerd tombstone_data_file:dir relabelto;
+
