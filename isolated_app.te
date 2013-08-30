@@ -19,4 +19,5 @@ r_dir_file(appdomain, isolated_app)
 # hence no sock_file or connectto permission. This appears to be how
 # Chrome works, may need to be updated as more apps using isolated services
 # are examined.
+allow appdomain isolated_app:unix_stream_socket { read write };
 allow isolated_app appdomain:unix_stream_socket { read write };
