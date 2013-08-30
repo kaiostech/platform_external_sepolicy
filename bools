@@ -1,7 +1,4 @@
 bool android_cts false;
-bool app_external_sdcard_rw true;
-bool app_internal_sdcard_rw true;
-bool debugfs false;
 bool disableAudioCapture false;
 bool disableAudio false;
 bool disableBluetooth false;
@@ -10,4 +7,3 @@ bool in_qemu false;
 bool manage_mac true;
 bool manage_selinux true;
 bool support_runas true;
-bool system_app_manage false;
