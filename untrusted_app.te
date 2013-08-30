@@ -10,7 +10,7 @@
 ###
 
 type untrusted_app, domain;
-app_domain(untrusted_app)
+untrustedapp_domain(untrusted_app, app_data_file)
 net_domain(untrusted_app)
 bluetooth_domain(untrusted_app)
 
