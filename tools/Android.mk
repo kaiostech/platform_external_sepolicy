@@ -47,4 +47,3 @@ LOCAL_STATIC_LIBRARIES := libsepol libselinux
 include $(BUILD_HOST_EXECUTABLE)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
-

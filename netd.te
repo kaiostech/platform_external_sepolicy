@@ -70,7 +70,6 @@ neverallow netd dev_type:blk_file { read write };
 neverallow netd kmem_device:chr_file { read write };
 
 # Setting SELinux enforcing status or booleans.
-# Conditionally allowed to system_app for SEAndroidManager.
 neverallow netd kernel:security { setenforce setbool };
 
 # Load security policy.
@@ -84,4 +83,3 @@ neverallow netd system_file:dir_file_class_set write;
 
 # Write to files in /data/data or system files on /data
 neverallow netd { app_data_file system_data_file }:dir_file_class_set write;
-

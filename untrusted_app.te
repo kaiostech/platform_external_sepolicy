@@ -34,7 +34,3 @@ allow untrustedappdomain self:{ tcp_socket udp_socket } { create_socket_perms ac
 # Bind to a particular hostname/address/interface (e.g., localhost) instead of
 # ANY. Normally, apps should not be listening on all interfaces.
 allow untrustedappdomain port:{ tcp_socket udp_socket } name_bind;
-
-# Allow the allocation and use of ptys
-# Used by: https://play.google.com/store/apps/details?id=jackpal.androidterm
-allow untrustedappdomain devpts:chr_file rw_file_perms;

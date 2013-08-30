@@ -235,6 +235,3 @@ neverallow { appdomain -unconfineddomain } fs_type:filesystem ~getattr;
 
 # Ability to set system properties.
 neverallow { appdomain -system_app -radio -shell -bluetooth } property_type:property_service set;
-
-
-

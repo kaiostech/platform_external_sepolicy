@@ -163,6 +163,7 @@ allow system data_file_type:notdevfile_class_set create_file_perms;
 security_access_policy(system)
 
 # Relabel apk files.
+relabelto_domain(system)
 allow system { apk_tmp_file apk_private_tmp_file }:file { relabelfrom relabelto };
 allow system { apk_data_file apk_private_data_file }:file { relabelfrom relabelto };
 
@@ -231,9 +232,3 @@ allow system usb_device:dir r_dir_perms;
 
 # Allow system to talk to sensors
 allow system sensors_device:chr_file rw_file_perms;
-
-relabelto_domain(system)
-
-allow system self:zygote { specifyids specifyrlimits specifyseinfo };
-
-
