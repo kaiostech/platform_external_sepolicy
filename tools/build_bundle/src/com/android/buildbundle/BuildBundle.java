@@ -35,12 +35,14 @@ import android.util.Base64;
  * mechanism.
  *
  * <pre>
- * Usage: buildbundle -k &lt;privatekey.pk8&gt; [-v &lt;version&gt;] [-r &lt;required hash&gt;] [-o &lt;output zip file&gt;] [-h] file [ file [ file ... ] ] 
+ * Usage: buildbundle -k &lt;privatekey.pk8&gt; [-v &lt;version&gt;] [-r &lt;required hash&gt;] 
+ *                    [-o &lt;output zip file&gt;] [-m &lt;meta&gt;] [-h] file [ file [ file ... ] ]
  * Options:
  *    -k pkcs8 DER formatted private key used to sign the bundle.
  *    -v version of the created bundle. Defaults to 1.
  *    -r hash of previous bundle that will be replaced. Defaults to 'NONE'.
  *    -o name of the output zip file. Defaults to update_bundle.zip.
+ *    -m an optional value that will be appended to the metadata file.
  *    -h prints this help screen.
  * Positional Arguments:
  *    file: path to a file to be included in the signed bundle.
@@ -60,13 +62,14 @@ public class BuildBundle {
         System.err.println("\n" + header + "\n");
         System.err.println("Usage: buildbundle -k <privatekey.pk8> " +
                            "[-v <version>] [-r <required hash>] " +
-                           "[-o <output zip file>] [-h] " +
+                           "[-o <output zip file>] [-m <meta>] [-h] " +
                            "file [ file [ file ... ] ] ");
         System.err.println("Options:");
         System.err.println(" -k pkcs8 DER formatted private key used to sign the bundle.");
         System.err.println(" -v version of the created bundle. Defaults to 1.");
         System.err.println(" -r hash of previous bundle that will be replaced. Defaults to 'NONE'.");
         System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip.");
+        System.err.println(" -m an additional value that will be appended to the metadata file");
         System.err.println(" -h prints this help screen.");
         System.err.println("Positional Arguments:");
         System.err.println(" file: path to a file to be included in the signed bundle.");
@@ -261,9 +264,10 @@ public class BuildBundle {
     }
 
     /**
-     * Takes a byte array as well as the version and previous hash and
-     * computes the digital signature with RSA and SHA-512. The secured
-     * message is then returned as a byte array.
+     * Takes a byte array as well as the version, previous hash and
+     * optional meta value and computes the digital signature using
+     * RSA and SHA-512. The secured message is then returned as a
+     * byte array.
      *
      * @param bundle byte array representing the built config bundle.
      * @param version the version of this config update.
@@ -271,6 +275,9 @@ public class BuildBundle {
      *                used to sign the config update.
      * @param requiredHash the hash of the previous config update
      *                     that will be replaced.
+     * @param otherMeta a generic string that will be added to the
+     *                  signed bundle. If the string is null it
+     *                  will not be part of the signed bundle.
      *
      * @exception IOException produced by failed or interrupted
      *            I/O operations when retrieving the key.
@@ -279,8 +286,8 @@ public class BuildBundle {
      *
      * @return a byte array of the signed message.
      */
-    public static byte[] sign_bundle(byte[] bundle, String version,
-                                     String privKey, String requiredHash)
+    public static byte[] sign_bundle(byte[] bundle, String version, String privKey,
+                                     String requiredHash, String otherMeta)
             throws IOException, GeneralSecurityException {
 
         InputStream is = new FileInputStream(new File (privKey));
@@ -293,6 +300,10 @@ public class BuildBundle {
         signer.update(bundle);
         signer.update(version.getBytes());
         signer.update(requiredHash.getBytes());
+        if (otherMeta != null) {
+            signer.update(otherMeta.getBytes());
+        }
+
         // The signature should be one large string
         return Base64.encode(signer.sign(), Base64.NO_WRAP);
     }
@@ -308,6 +319,7 @@ public class BuildBundle {
         String version = "1";
         String requiredHash = "NONE";
         String outputName = "update_bundle.zip";
+        String otherMeta = null;
         ArrayList<String> configPaths = new ArrayList<String>();
 
         try {
@@ -322,6 +334,8 @@ public class BuildBundle {
                     requiredHash = args[++i];
                 } else if (arg.equals("-o")) {
                     outputName = args[++i];
+                } else if (arg.equals("-m")) {
+                    otherMeta = args[++i];
                 } else if (arg.equals("-h")) {
                     usage("Tool to build OTA config bundles");
                 } else {
@@ -343,10 +357,29 @@ public class BuildBundle {
         }
 
         try {
+            String versionRegex = "\\d+";
+            if (!version.matches(versionRegex)) {
+                throw new IllegalArgumentException("Illegal version: " + version);
+            }
+
+            String hashRegex = "[a-fA-F0-9]{128}";
+            if (!"NONE".equals(requiredHash) && !requiredHash.matches(hashRegex)) {
+                throw new IllegalArgumentException("Illegal SHA-512 hash: " + requiredHash);
+            }
+
+            // Check that the extra meta value is a positive integer?
+            String metaRegex = "\\d+";
+            if (otherMeta != null && !otherMeta.matches(metaRegex)) {
+                throw new IllegalArgumentException("Illegal metavalue: " + otherMeta);
+            }
+
             byte[] bundle = build_bundle(configPaths);
-            byte[] signed = sign_bundle(bundle, version, privateKey, requiredHash);
+            byte[] signed = sign_bundle(bundle, version, privateKey, requiredHash, otherMeta);
 
             String joined = Joiner.on(":").join(requiredHash, new String(signed), version);
+            if (otherMeta != null) {
+                joined += ":" + otherMeta;
+            }
             byte[] joined_bytes = joined.getBytes();
 
             // Build zip file
@@ -364,6 +397,8 @@ public class BuildBundle {
             System.out.println("IOException error: " + ioex.toString() + ". Exiting.");
         } catch (GeneralSecurityException gex) {
             System.out.println("Security Exception error: " + gex.toString() + ". Exiting.");
+        } catch (IllegalArgumentException iax) {
+            System.out.println(iax.toString());
         }
     }
 }

@@ -13,7 +13,7 @@ usage()
 cat << EOF
 
 usage: buildmmacbundle -k <private key.pk8> [-v <version>] [-r <previous hash>] \
-[-h] -- <mac_permissions.xml>
+[-e <enforcing>] [-h] -- <mac_permissions.xml>
 
 This script builds a mmac policy bundle and supporting
 metadata file capable of being loaded via the ConfigUpdate
@@ -21,16 +21,20 @@ mechanism. It takes a pkcs8 DER encoded RSA private key
 that is then used to sign the bundle. For AOSP development
 you'll typically want to use the key from the source tree at
 build/target/product/security/testkey.pk8. If building
-your own cert you should probably use at least a key size of
+your own cert you should probably use a key size of least
 1024 or greater. The bundle requires that the mac_permissions.xml
 be included and with that exact basename. The built bundle will
 be written to mmac_bundle.zip which will include the
-signature metadata file of the bundle.
+signature metadata file of the bundle. An optional enforcing
+mode can also be included which will allow the shipped bundle
+to be put into enforcing or permissive mode.
 
 OPTIONS:
    -h      Show this message.
    -v      Version of the built bundle. Defaults to 1.
    -r      SHA-512 hash of the bundle to replace. Defaults to 'NONE'.
+   -e      Whether or not the policy will be put into enforcing mode.
+           1 for true, 0 for false. Defaults to 0.
 
 EOF
 }
@@ -39,8 +43,9 @@ VERSION="1"
 HASH="NONE"
 KEY=
 MAC_PERMISSIONS=
+ENFORCE="0"
 OUTPUT=mmac_bundle.zip
-while getopts "k:v:r:h" OPTION
+while getopts "k:v:r:e:h" OPTION
 do
      case $OPTION in
          k)
@@ -51,6 +56,9 @@ do
              ;;
          r)
              HASH=$OPTARG
+             ;;
+         e)
+             ENFORCE=$OPTARG
              ;;
          h)
              usage
@@ -87,6 +95,7 @@ fi
 
 # Notice the order of the policy files matter here. The backend expects
 # a set order. Any change there (SELinuxPolicyInstallReceiver.java) will
-# result in a change here.
-BUILDBUNDLE_COMMAND="buildbundle -k $KEY -v $VERSION -r $HASH -o $OUTPUT $MAC_PERMISSIONS"
+# result in a change here. Also note that buildbundle takes a generic
+# -m option, so we convert our -e to -m here.
+BUILDBUNDLE_COMMAND="buildbundle -k $KEY -v $VERSION -r $HASH -o $OUTPUT -m $ENFORCE $MAC_PERMISSIONS"
 $BUILDBUNDLE_COMMAND
