@@ -1,5 +1,7 @@
 package com.android.buildbundle;
 
+import com.android.buildbundle.Encoding.*;
+
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
@@ -36,12 +38,15 @@ import android.util.Base64;
  *
  * <pre>
  * Usage: buildbundle -k &lt;privatekey.pk8&gt; [-v &lt;version&gt;] [-r &lt;required hash&gt;] 
- *                    [-o &lt;output zip file&gt;] [-m &lt;meta&gt;] [-h] file [ file [ file ... ] ]
+ *                    [-o &lt;output zip file&gt;] [-m &lt;meta&gt;] [-e &lt;encoding&gt;] [-h]
+ *                    file [ file [ file ... ] ]
  * Options:
  *    -k pkcs8 DER formatted private key used to sign the bundle.
  *    -v version of the created bundle. Defaults to 1.
  *    -r hash of previous bundle that will be replaced. Defaults to 'NONE'.
  *    -o name of the output zip file. Defaults to update_bundle.zip.
+ *    -e type of bundle encoding. Possible values are 'base64' and 'none'.
+ *       Defaults to 'base64'.
  *    -m an optional value that will be appended to the metadata file.
  *    -h prints this help screen.
  * Positional Arguments:
@@ -62,47 +67,21 @@ public class BuildBundle {
         System.err.println("\n" + header + "\n");
         System.err.println("Usage: buildbundle -k <privatekey.pk8> " +
                            "[-v <version>] [-r <required hash>] " +
-                           "[-o <output zip file>] [-m <meta>] [-h] " +
-                           "file [ file [ file ... ] ] ");
+                           "[-o <output zip file>] [-m <meta>] [-e <encoding>] " +
+                           "[-h] file [ file [ file ... ] ] ");
         System.err.println("Options:");
         System.err.println(" -k pkcs8 DER formatted private key used to sign the bundle.");
         System.err.println(" -v version of the created bundle. Defaults to 1.");
         System.err.println(" -r hash of previous bundle that will be replaced. Defaults to 'NONE'.");
         System.err.println(" -o name of the output zip file. Defaults to update_bundle.zip.");
-        System.err.println(" -m an additional value that will be appended to the metadata file");
+        System.err.println(" -m additional value that will be appended to the metadata file.");
+        System.err.println(" -e type of bundle encoding. Possible values are 'base64' and 'none'.");
+        System.err.println("    Defaults to 'base64'.");
         System.err.println(" -h prints this help screen.");
         System.err.println("Positional Arguments:");
         System.err.println(" file: path to a file to be included in the signed bundle.");
         System.err.println("       The order of the files will be preserved in the bundle.");
         System.exit(1);
-    }
-
-    /**
-     * Given a File object encode it according to the
-     * current bundle scheme used by ConfigUpdateInstallReceiver.
-     * Presently, the encoding is base64 chunked, line
-     * wrapped at 76 characters, with each line ending
-     * in '\n'. A byte array of the encoded file is returned.
-     * Base64 is the choosen encoding scheme for OTA config
-     * bundle updates and this function is subject to change
-     * if the update mechanism itself changes.
-     *
-     * @param path File object of the file to encode.
-     *
-     * @exception IOException produced by failed or interrupted
-     *            I/O operations on the requested path or if
-     *            the passed path is null.
-     *
-     * @return byte array of the encoded file scheme.
-     */
-    private static byte[] create_encoding(File path) throws IOException {
-
-        if (path == null) {
-            throw new IOException("Requested path is null.");
-        }
-
-        byte[] policy = Files.toByteArray(path);
-        return Base64.encode(policy, Base64.DEFAULT);
     }
 
     /**
@@ -112,24 +91,37 @@ public class BuildBundle {
      * be preserved when building the bundle. The bundle as
      * a byte array is returned and is capable of being directly
      * loaded via the ConfigUpdateInstallReceiver mechanism.
-     * If there are no paths passed then no bundle is created;
-     * however, an empty byte array will still be returned.
-     * No metadata about the bundle is returned; additional
-     * processing must be performed to calculate that data.
+     * The format of the returned bundle depends on the number of
+     * passed paths. If more than one file is passed then a
+     * header representing file lengths will precede the file
+     * contents. If only one file is passed then no byte header
+     * is attached. If there are no paths passed then no bundle
+     * is created; however, an empty byte array will still be
+     * returned. No metadata about the bundle is returned;
+     * additional processing must be performed to calculate that
+     * data.
      *
      * @param paths ArrayList of strings representing paths
      *              to config files to include in the bundle.
+     * @param encodingFunction the scheme used to encode
+     *        the bundle.
      *
      * @exception IOException produced by failed or interrupted
-     *            I/O operations on any of the requested paths or
-     *            if the passed paths list is null.
+     *            I/O operations on any of the requested paths.
+     *            Also thrown if the passed paths list is null
+     *            or the encoding scheme is null.
      *
      * @return byte array of the created config bundle.
      */
-    public static byte[] build_bundle(ArrayList<String> paths) throws IOException {
+    public static byte[] build_bundle(ArrayList<String> paths, Encoding encodingFunction)
+            throws IOException {
 
         if (paths == null) {
-            throw new IOException("Requested paths is null.");
+            throw new IOException("Requested paths is null");
+        }
+
+        if (encodingFunction == null) {
+            throw new IOException("Encoding scheme is null");
         }
 
         int numOfPaths = paths.size();
@@ -137,7 +129,7 @@ public class BuildBundle {
         byte[][] files = new byte[numOfPaths][];
 
         for (int i = 0; i < numOfPaths; i++) {
-            files[i] = create_encoding(new File(paths.get(i)));
+            files[i] = encodingFunction.create_encoding(new File(paths.get(i)));
             lengths[i] = files[i].length;
         }
 
@@ -147,7 +139,9 @@ public class BuildBundle {
         }
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        output.write(b.array());
+        if (numOfPaths > 1) {
+            output.write(b.array());
+        }
         for (int i = 0; i < numOfPaths; i++) {
             output.write(files[i]);
         }
@@ -309,11 +303,22 @@ public class BuildBundle {
     }
 
     /**
-     * Main entry point when tool is directly invoked.
-     * Consider the help message invoked with -h for
-     * a more complete description.
+     * Runs the command line driver.
+     *
+     * @param args program arguments.
      */
     public static void main(String[] args) {
+        new BuildBundle().run(args);
+    }
+
+    /**
+     * Main entry point for both command line driver and
+     * library hook. Consider the help message invoked with
+     * -h for a more complete description of the functionality.
+     *
+     * @param args program arguments.
+     */
+    public static void run(String[] args) {
 
         String privateKey = null;
         String version = "1";
@@ -321,6 +326,7 @@ public class BuildBundle {
         String outputName = "update_bundle.zip";
         String otherMeta = null;
         ArrayList<String> configPaths = new ArrayList<String>();
+        Encoding encodingFunction = Encoding.encodeFunctions.get("base64");
 
         try {
             for (int i = 0; i < args.length; i++) {
@@ -336,6 +342,8 @@ public class BuildBundle {
                     outputName = args[++i];
                 } else if (arg.equals("-m")) {
                     otherMeta = args[++i];
+                } else if (arg.equals("-e")) {
+                    encodingFunction = Encoding.encodeFunctions.get(args[++i]);
                 } else if (arg.equals("-h")) {
                     usage("Tool to build OTA config bundles");
                 } else {
@@ -367,13 +375,13 @@ public class BuildBundle {
                 throw new IllegalArgumentException("Illegal SHA-512 hash: " + requiredHash);
             }
 
-            // Check that the extra meta value is a positive integer?
+            // Check that the extra meta value is a non-negative integer?
             String metaRegex = "\\d+";
             if (otherMeta != null && !otherMeta.matches(metaRegex)) {
                 throw new IllegalArgumentException("Illegal metavalue: " + otherMeta);
             }
 
-            byte[] bundle = build_bundle(configPaths);
+            byte[] bundle = build_bundle(configPaths, encodingFunction);
             byte[] signed = sign_bundle(bundle, version, privateKey, requiredHash, otherMeta);
 
             String joined = Joiner.on(":").join(requiredHash, new String(signed), version);
