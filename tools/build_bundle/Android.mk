@@ -6,7 +6,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := buildbundle
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src)
+LOCAL_SRC_FILES := \
+	$(call all-java-files-under, src) \
+	../../../../frameworks/base/core/java/android/util/Base64.java
 
 LOCAL_JAR_MANIFEST := BuildBundle.mf
 
