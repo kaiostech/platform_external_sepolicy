@@ -160,7 +160,7 @@ include $(BUILD_SYSTEM)/base_rules.mk
 
 $(LOCAL_BUILT_MODULE): $(call build_policy, $(LOCAL_MODULE))
 	mkdir -p $(dir $@)
-	$(hide)m4 -s $^ > $@
+	$(hide)m4 $^ > $@
 
 ##################################
 include $(CLEAR_VARS)
