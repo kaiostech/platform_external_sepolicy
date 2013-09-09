@@ -4,7 +4,7 @@
 # A simple wrapper script around buildbundle that puts
 # the selinux policy files in the correct order as well
 # as correctly labels the output zip file. buildbundle
-# is not context aware w.r.t to the correct ordering of
+# is not context aware w.r.t the correct ordering of
 # selinux files and so this wrapper script is needed.
 #
 
@@ -21,7 +21,7 @@ mechanism. It takes a pkcs8 DER encoded RSA private key
 that is then used to sign the bundle. For AOSP development
 you'll typically want to use the key from the source tree at
 build/target/product/security/testkey.pk8. If building
-your own cert you should probably use at least a key size of
+your own cert you should probably use a key size of at least
 1024 or greater. The bundle requires that seapp_contexts,
 file_contexts, property_contexts and sepolicy files all be
 included and with those exact basenames. The built bundle will
@@ -31,7 +31,7 @@ signature metadata file of the bundle.
 OPTIONS:
    -h      Show this message.
    -v      Version of the built bundle. Defaults to 1.
-   -r      Sha512 hash of the bundle to replace. Defaults to 'NONE'.
+   -r      SHA-512 hash of the bundle to replace. Defaults to 'NONE'.
 
 EOF
 }
@@ -43,6 +43,7 @@ FILE_CONTEXTS=
 PROPERTY_CONTEXTS=
 SEAPP_CONTEXTS=
 SEPOLICY=
+ENFORCE="0"
 OUTPUT=selinux_bundle.zip
 while getopts "k:v:r:h" OPTION
 do
