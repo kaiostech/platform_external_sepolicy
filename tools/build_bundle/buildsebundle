@@ -13,7 +13,7 @@ usage()
 cat << EOF
 
 usage: buildsebundle -k <private key.pk8> [-v <version>] [-r <previous hash>] \
-[-e <enforcing>] [-h] -- <file_contexts> <property_contexts> <sepolicy> <seapp_contexts>
+[-h] -- <file_contexts> <property_contexts> <sepolicy> <seapp_contexts>
 
 This script builds a selinux policy bundle and supporting
 metadata file capable of being loaded via the ConfigUpdate
@@ -26,16 +26,12 @@ your own cert you should probably use a key size of at least
 file_contexts, property_contexts and sepolicy files all be
 included and with those exact basenames. The built bundle will
 be written to selinux_bundle.zip which will include the
-signature metadata file of the bundle. An optional enforcing
-mode can also be included which will allow the shipped bundle
-to be put into enforcing or permissive mode.
+signature metadata file of the bundle.
 
 OPTIONS:
    -h      Show this message.
    -v      Version of the built bundle. Defaults to 1.
    -r      SHA-512 hash of the bundle to replace. Defaults to 'NONE'.
-   -e      Whether or not the policy will be put into enforcing mode.
-           1 for true, 0 for false. Defaults to 0.
 
 EOF
 }
@@ -49,7 +45,7 @@ SEAPP_CONTEXTS=
 SEPOLICY=
 ENFORCE="0"
 OUTPUT=selinux_bundle.zip
-while getopts "k:v:r:e:h" OPTION
+while getopts "k:v:r:h" OPTION
 do
      case $OPTION in
          k)
@@ -60,9 +56,6 @@ do
              ;;
          r)
              HASH=$OPTARG
-             ;;
-         e)
-             ENFORCE=$OPTARG
              ;;
          h)
              usage
@@ -110,7 +103,6 @@ fi
 
 # Notice the order of the policy files matter here. The backend expects
 # a set order. Any change there (SELinuxPolicyInstallReceiver.java) will
-# result in a change here. Also note that buildbundle takes a generic
-# -m option, so we convert our -e to -m here.
-BUILDBUNDLE_COMMAND="buildbundle -k $KEY -v $VERSION -r $HASH -o $OUTPUT -m $ENFORCE $SEAPP_CONTEXTS $PROPERTY_CONTEXTS $FILE_CONTEXTS $SEPOLICY"
+# result in a change here.
+BUILDBUNDLE_COMMAND="buildbundle -k $KEY -v $VERSION -r $HASH -o $OUTPUT $SEAPP_CONTEXTS $PROPERTY_CONTEXTS $FILE_CONTEXTS $SEPOLICY"
 $BUILDBUNDLE_COMMAND
