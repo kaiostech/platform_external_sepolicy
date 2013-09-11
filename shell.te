@@ -1,11 +1,6 @@
-# Type for /system/bin/sh and friends.
-type shell_exec, file_type, exec_type;
-
-# Domain for adb shell process.
+# Domain for shell processes spawned by ADB
 type shell, domain, shelldomain, mlstrustedsubject;
-
-# Domain for init-spawned shell processes (e.g. console service).
-type init_shell, domain, shelldomain, mlstrustedsubject;
+type shell_exec, file_type, exec_type;
 
 # Rules for adb shell.
 # Access /data/local/tmp.
@@ -18,10 +13,6 @@ allow shell sdcard_type:file create_file_perms;
 # Run app_process.
 # XXX Split into its own domain?
 app_domain(shell)
-
-# Rules for init-spawned shells.
-binder_use(init_shell)
-binder_call(init_shell, system)
 
 # Rules for all shell domains.
 allow shelldomain rootfs:dir r_dir_perms;
