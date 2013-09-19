@@ -3,6 +3,6 @@ type init_shell, domain, shelldomain, mlstrustedsubject;
 
 # Rules for init-spawned shells.
 binder_use(init_shell)
-binder_call(init_shell, system)
+binder_call(init_shell, system_server)
 
 # Inherits shelldomain rules from shell.te
