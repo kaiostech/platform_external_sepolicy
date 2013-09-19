@@ -4,8 +4,6 @@
 #
 type system_server, domain, mlstrustedsubject;
 
-typealias system_server alias system;
-
 # Dalvik Compiler JIT Mapping.
 allow system_server self:process execmem;
 
