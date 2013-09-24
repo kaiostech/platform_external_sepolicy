@@ -23,9 +23,9 @@ allow appdomain zygote_tmpfs:file read;
 allow appdomain zygote:process sigchld;
 
 # Communicate with system_server.
-allow appdomain system:fifo_file rw_file_perms;
-allow appdomain system:unix_stream_socket { read write setopt };
-binder_call(appdomain, system)
+allow appdomain system_server:fifo_file rw_file_perms;
+allow appdomain system_server:unix_stream_socket { read write setopt };
+binder_call(appdomain, system_server)
 
 # Communicate with surfaceflinger.
 allow appdomain surfaceflinger:unix_stream_socket { read write setopt };
@@ -66,6 +66,15 @@ binder_use(appdomain)
 binder_call(appdomain, binderservicedomain)
 # Perform binder IPC to other apps.
 binder_call(appdomain, appdomain)
+
+# Appdomain interaction with isolated apps
+r_dir_file(appdomain, isolated_app)
+
+# Already connected, unnamed sockets being passed over some other IPC
+# hence no sock_file or connectto permission. This appears to be how
+# Chrome works, may need to be updated as more apps using isolated services
+# are examined.
+allow appdomain isolated_app:unix_stream_socket { read write };
 
 # Backup ability for every app. BMS opens and passes the fd
 # to any app that has backup ability. Hence, no open permissions here.
