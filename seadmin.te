@@ -6,12 +6,12 @@
 selinux_getenforce(release_app)
 
 if (manage_selinux) {
-access_kmsg(system_server)
-access_audit_logs(system_server)
-selinux_manage_policy(system_server)
+access_kmsg(system)
+access_audit_logs(system)
+selinux_manage_policy(system)
 }
 
 if (manage_mac) {
-access_logcat(system_server)
-mmac_manage_policy(system_server)
+access_logcat(system)
+mmac_manage_policy(system)
 }

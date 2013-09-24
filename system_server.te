@@ -16,6 +16,9 @@ allow system_server zygote_tmpfs:file read;
 net_domain(system_server)
 bluetooth_domain(system_server)
 
+# TODO: Remove the temporary alias below once the renaming of system to system_server is complete in all repositories.
+typealias system_server alias system;
+
 # These are the capabilities assigned by the zygote to the
 # system server.
 allow system_server self:capability {
