@@ -38,11 +38,16 @@ allow netd dhcp:process signal;
 # these capabilities
 allow netd self:capability { dac_override chown fowner };
 allow netd wifi_data_file:file create_file_perms;
-allow netd wifi_data_file:dir rw_dir_perms;
+allow netd wifi_data_file:dir create_dir_perms;
+allow netd wifi_data_file:sock_file { create setattr unlink write };
+
+# Allow netd to chmod dir /data/misc/dhcp
+allow netd dhcp_data_file:dir create_dir_perms;
 
 # Allow netd to spawn hostapd in it's own domain
 domain_auto_trans(netd, hostapd_exec, hostapd)
 allow netd hostapd:process signal;
+allow netd hostapd:unix_dgram_socket sendto;
 
 # Allow netd to spawn dnsmasq in it's own domain
 domain_auto_trans(netd, dnsmasq_exec, dnsmasq)
