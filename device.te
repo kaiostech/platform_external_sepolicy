@@ -6,6 +6,10 @@ type ashmem_device, dev_type, mlstrustedobject;
 type audio_device, dev_type;
 type binder_device, dev_type, mlstrustedobject;
 type block_device, dev_type;
+# System block device mounted on /system.
+type system_block_device, dev_type;
+# Recovery block device.
+type recovery_block_device, dev_type;
 type camera_device, dev_type;
 type dm_device, dev_type;
 type loop_device, dev_type;
