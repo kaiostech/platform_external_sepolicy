@@ -154,3 +154,7 @@ neverallow untrusted_app mlstrustedsubject:process fork;
 # bugs, so we want to ensure untrusted_app never has this
 # capability.
 neverallow untrusted_app file_type:file link;
+
+# Do not allow untrusted_app to set system properties.
+neverallow untrusted_app property_socket:sock_file write;
+neverallow untrusted_app property_type:property_service set;
