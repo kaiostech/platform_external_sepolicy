@@ -24,3 +24,10 @@ allow toolbox swap_block_device:blk_file rw_file_perms;
 neverallow { domain -init } toolbox:process transition;
 neverallow domain toolbox:process dyntransition;
 neverallow toolbox { file_type fs_type -toolbox_exec}:file entrypoint;
+
+allow toolbox shell_data_file:dir { write read open search rmdir setattr };
+allow toolbox system_data_file:dir { open read write create remove_name add_name setattr rmdir };
+
+allow toolbox self:capability { dac_override };
+allow toolbox system_data_file:file { open read write create setattr unlink};
+

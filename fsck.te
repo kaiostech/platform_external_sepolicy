@@ -41,3 +41,6 @@ neverallow fsck {
 neverallow { domain -init -vold } fsck:process transition;
 neverallow domain fsck:process dyntransition;
 neverallow fsck { file_type fs_type -fsck_exec }:file entrypoint;
+
+allow fsck block_device:blk_file {read write open getattr ioctl };
+allow fsck swap_block_device:blk_file { getattr };

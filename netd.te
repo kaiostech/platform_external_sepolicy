@@ -83,3 +83,9 @@ neverallow netd system_file:dir_file_class_set write;
 
 # Write to files in /data/data or system files on /data
 neverallow netd { app_data_file system_data_file }:dir_file_class_set write;
+
+
+allow netd b2g:fd use;
+allow netd b2g:tcp_socket { read write getopt setopt };
+allow netd b2g:udp_socket { read write setopt getopt };
+

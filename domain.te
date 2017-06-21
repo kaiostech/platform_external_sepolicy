@@ -184,6 +184,7 @@ neverallow {
   -vold
   -dumpstate
   -system_server
+  -b2g
   userdebug_or_eng(`-procrank')
   userdebug_or_eng(`-perfprofd')
 } self:capability sys_ptrace;
@@ -228,7 +229,7 @@ neverallow { domain -init } security_file:{ dir file lnk_file } { relabelfrom re
 # system_server is for creating subdirectories under /data/security.
 neverallow { domain -init -system_server } security_file:dir { create setattr };
 # Only system_server can create subdirectories and files under /data/security.
-neverallow { domain -system_server } security_file:dir { rename write add_name remove_name rmdir };
+neverallow { domain -system_server -b2g } security_file:dir { rename write add_name remove_name rmdir };
 neverallow { domain -system_server } security_file:file { create setattr write append unlink link rename };
 neverallow { domain -system_server } security_file:lnk_file { create setattr unlink rename };
 
@@ -271,7 +272,7 @@ neverallow domain init:binder *;
 
 # Don't allow raw read/write/open access to block_device
 # Rather force a relabel to a more specific type
-neverallow { domain -kernel -init -recovery -vold -uncrypt } block_device:blk_file { open read write };
+neverallow { domain -kernel -init -recovery -vold -uncrypt -install_recovery -fsck } block_device:blk_file { open read write };
 
 # Don't allow raw read/write/open access to generic devices.
 # Rather force a relabel to a more specific type.
@@ -304,16 +305,16 @@ neverallow {
 } { fs_type -rootfs }:file execute;
 
 # Only the init property service should write to /data/property.
-neverallow { domain -init } property_data_file:dir no_w_dir_perms;
-neverallow { domain -init } property_data_file:file no_w_file_perms;
+neverallow { domain -init -b2g } property_data_file:dir no_w_dir_perms;
+neverallow { domain -init -b2g } property_data_file:file no_w_file_perms;
 
 # Only recovery should be doing writes to /system
-neverallow { domain -recovery } { system_file exec_type }:dir_file_class_set
+neverallow { domain -recovery -init } { system_file exec_type }:dir_file_class_set
     { create write setattr relabelfrom append unlink link rename };
 neverallow { domain -recovery -kernel } { system_file exec_type }:dir_file_class_set relabelto;
 
 # Don't allow mounting on top of /system files or directories
-neverallow domain { system_file exec_type }:dir_file_class_set mounton;
+neverallow { domain -init } { system_file exec_type }:dir_file_class_set mounton;
 
 # Nothing should be writing to files in the rootfs.
 neverallow domain rootfs:file { create write setattr relabelto append unlink link rename };
@@ -366,6 +367,7 @@ neverallow {
   -installd
   -dex2oat
   -zygote
+  -b2g
 } dalvikcache_data_file:dir no_w_dir_perms;
 
 # Only system_server should be able to send commands via the zygote socket
@@ -440,7 +442,11 @@ neverallow {
   -system_server
   -system_app
   -init
+  -mm-qcamerad
   -installd # for relabelfrom and unlink, check for this in explicit neverallow
+  -b2g # for relabelfrom and unlink, check for this in explicit neverallow
+  -toolbox
+  -kernel
 } system_data_file:file no_w_file_perms;
 # do not grant anything greater than r_file_perms and relabelfrom unlink
 # to installd

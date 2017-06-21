@@ -303,7 +303,7 @@ neverallow appdomain exec_type:file
 # specified in file_contexts.  Define a different type for portions
 # that should be writable by apps.
 # Exception for system_app for Settings.
-neverallow { appdomain -system_app }
+neverallow { appdomain -system_app -shell }
     system_data_file:dir_file_class_set
     { create write setattr relabelfrom relabelto append unlink link rename };
 

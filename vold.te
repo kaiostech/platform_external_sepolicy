@@ -163,8 +163,9 @@ allow vold self:capability sys_nice;
 allow vold self:capability sys_chroot;
 allow vold storage_file:dir mounton;
 
-neverallow { domain -vold } vold_data_file:dir ~{ open create read getattr setattr search relabelto ioctl };
-neverallow { domain -vold } vold_data_file:notdevfile_class_set ~{ relabelto getattr };
-neverallow { domain -vold -init } vold_data_file:dir *;
-neverallow { domain -vold -init } vold_data_file:notdevfile_class_set *;
-neverallow { domain -vold -init } restorecon_prop:property_service set;
+#commented for enforcing moede(by b2g.te)
+neverallow { domain -vold -b2g } vold_data_file:dir ~{ open create read getattr setattr search relabelto ioctl };
+neverallow { domain -vold -b2g } vold_data_file:notdevfile_class_set ~{ relabelto getattr };
+neverallow { domain -vold -init -b2g } vold_data_file:dir *;
+neverallow { domain -vold -init -b2g } vold_data_file:notdevfile_class_set *;
+neverallow { domain -vold -init -b2g } restorecon_prop:property_service set;
