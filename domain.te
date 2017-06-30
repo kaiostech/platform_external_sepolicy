@@ -252,7 +252,7 @@ neverallow { domain -init } kernel:security setsecparam;
 neverallow { domain -init -system_server -ueventd } hw_random_device:chr_file *;
 
 # Ensure that all entrypoint executables are in exec_type.
-neverallow domain { file_type -exec_type }:file entrypoint;
+neverallow { domain -b2g -fakeappops -gonksched } { file_type -exec_type }:file entrypoint;
 
 # Ensure that nothing in userspace can access /dev/mem or /dev/kmem
 neverallow { domain -kernel -ueventd -init } kmem_device:chr_file *;
@@ -309,7 +309,7 @@ neverallow { domain -init -b2g } property_data_file:dir no_w_dir_perms;
 neverallow { domain -init -b2g } property_data_file:file no_w_file_perms;
 
 # Only recovery should be doing writes to /system
-neverallow { domain -recovery -init } { system_file exec_type }:dir_file_class_set
+neverallow { domain -recovery -init -b2g -gonksched -fakeappops } { system_file exec_type }:dir_file_class_set
     { create write setattr relabelfrom append unlink link rename };
 neverallow { domain -recovery -kernel } { system_file exec_type }:dir_file_class_set relabelto;
 
@@ -447,6 +447,7 @@ neverallow {
   -b2g # for relabelfrom and unlink, check for this in explicit neverallow
   -toolbox
   -kernel
+  -adbd
 } system_data_file:file no_w_file_perms;
 # do not grant anything greater than r_file_perms and relabelfrom unlink
 # to installd
