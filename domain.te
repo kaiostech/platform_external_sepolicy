@@ -196,6 +196,7 @@ neverallow {
   -init
   -ueventd
   -vold
+  -healthd
 } self:capability mknod;
 
 # Limit raw I/O to these whitelisted domains.
@@ -278,7 +279,7 @@ neverallow { domain -kernel -init -recovery -vold -uncrypt -install_recovery -fs
 # Rather force a relabel to a more specific type.
 # init is exempt from this as there are character devices that only it uses.
 # ueventd is exempt from this, as it is managing these devices.
-neverallow { domain -init -ueventd -b2g } device:chr_file { open read write };
+neverallow { domain -init -ueventd -b2g -healthd } device:chr_file { open read write };
 
 # Limit what domains can mount filesystems or change their mount flags.
 # sdcard_type / vfat is exempt as a larger set of domains need
