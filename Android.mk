@@ -10,6 +10,8 @@ POLICYVERS ?= 30
 MLS_SENS=1
 MLS_CATS=1024
 
+-include $(LOCAL_PATH)/kaios_sepolicy.mk
+
 ifdef BOARD_SEPOLICY_REPLACE
 $(error BOARD_SEPOLICY_REPLACE is no longer supported; please remove from your BoardConfig.mk or other .mk file.)
 endif

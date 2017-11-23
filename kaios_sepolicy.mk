@@ -1,3 +1,3 @@
-#Kaios sepolicy enabler
-#will be used in gonk-misc/b2g.mk
+#KaiOS sepolicy enabler
 KAIOS_SEPOLICY_ENABLED=true
+-include gonk-misc/sepolicy/sepolicy.mk
