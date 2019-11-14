@@ -296,6 +296,7 @@ neverallow {
     -dumpstate
     -shell
     -api-daemon
+    -child-daemon
     userdebug_or_eng(`-su')
     -system_server
     -zygote
